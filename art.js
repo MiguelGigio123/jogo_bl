@@ -33,6 +33,28 @@ function scene(c,id,t){
   // pens, feed troughs and stacked supplies
   for(let i=0;i<5;i++){let x=22+i*98;px(c,x,70,3,145,'#4a3427');px(c,x+48,70,3,145,'#4a3427');px(c,x,70,51,3,'#c09762');px(c,x,212,51,3,'#c09762');}
   for(let i=0;i<6;i++){let x=32+i*82;px(c,x,100+(i%2)*52,26,14,'#9d7549');px(c,x+3,96+(i%2)*52,20,5,'#d2ae78');}
+  // Animal pairs in their own stalls: distinct silhouettes make this chapter readable at a glance
+  const pairs=[['#b98555','#d6b47c'],['#8b8170','#c7b99d'],['#a9784d','#d1a36e']];
+  for(let i=0;i<3;i++){
+   const x=45+i*164, y=154+(i%2)*5, colors=pairs[i];
+   for(let j=0;j<2;j++){
+    const ox=x+j*23;
+    // compact four-legged animal silhouette with head, ears and tail
+    px(c,ox,y,15,9,colors[j]);px(c,ox+10,y-5,8,8,colors[j]);
+    px(c,ox+11,y-8,3,4,colors[j]);px(c,ox+16,y-7,3,3,'#302820');
+    px(c,ox+2,y+8,3,7,'#49372b');px(c,ox+11,y+8,3,7,'#49372b');
+    px(c,ox-3,y+2,4,2,colors[j]);
+   }
+  }
+  // Narrow portholes reveal the approaching rain outside the ark
+  for(let i=0;i<5;i++){
+   const x=32+i*96;px(c,x,34,27,22,'#3a3028');px(c,x+3,37,21,16,'#5f8790');
+   px(c,x+12,37,3,16,'#a58a61');px(c,x+3,44,21,3,'#a58a61');
+  }
+  for(let i=0;i<18;i++){
+   const x=(i*31+t*24)%512,y=5+(i*17)%26;
+   px(c,x,y,2,7,'#9bb8b5');
+  }
   px(c,0,232,512,12,'#3b2c25');
  }else if(id==='moses'){
   px(c,0,0,512,288,'#223d57');px(c,0,0,512,70,'#314c61');
