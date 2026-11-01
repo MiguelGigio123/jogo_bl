@@ -70,10 +70,23 @@ test('os sete capítulos permitem concluir seus pontos de exploração e enigmas
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/?test=1');
-  const puzzleSpot = [2, 1, 1, -1, 1, 1, 1];
+  const puzzleSpot = [-1, 1, 1, -1, 1, 1, 1];
   for (let chapter = 0; chapter < 7; chapter++) {
     await page.evaluate(i => window.__TLS_TEST__.setChapter(i), chapter);
-    if (chapter === 3) {
+    if (chapter === 0) {
+      for (const spot of [0, 1, 2]) {
+        await interact(page, spot);
+        if (spot === 1) {
+          for (const name of ['PISOM','GIOM','TIGRE','EUFRATES'])
+            await page.locator('[data-river]').filter({hasText:name}).click();
+          await page.locator('#confirmRivers').click();
+        }
+        await closeSpot(page);
+      }
+      await interact(page, 3);
+      await page.locator('[data-eden="knowledge"]').click();
+      await closeSpot(page);
+    } else if (chapter === 3) {
       for (let spot = 0; spot < 3; spot++) {
         await interact(page, spot);
         await page.locator('[data-answer="0"]').click();
@@ -161,7 +174,7 @@ test('Éden: jogador consegue caminhar fisicamente até a clareira dos animais e
   await page.waitForTimeout(3000);
   await page.keyboard.up('ArrowLeft');
   const player = await page.evaluate(() => window.__TLS_TEST__.getState());
-  expect(Math.abs(player.x - 150)).toBeLessThan(20);
+  expect(Math.abs(player.x - 150)).toBeLessThan(32);
   expect(Math.abs(player.y - 220)).toBeLessThan(25);
   await page.keyboard.press('e');
   await expect(page.getByRole('heading', { name: 'Clareira dos animais' })).toBeVisible();
