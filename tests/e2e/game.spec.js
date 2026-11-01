@@ -148,3 +148,22 @@ test('Éden: câmera acompanha o jogador sem sair dos limites do mundo', async (
   expect(s.cameraX).toBeGreaterThanOrEqual(0);
   expect(s.cameraX).toBeLessThanOrEqual(388);
 });
+
+test('Éden: jogador consegue caminhar fisicamente até a clareira dos animais e interagir', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(0));
+  await page.keyboard.down('ArrowUp');
+  await page.waitForTimeout(3400);
+  await page.keyboard.up('ArrowUp');
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(1300);
+  await page.keyboard.up('ArrowRight');
+  const player = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(Math.abs(player.x - 150)).toBeLessThan(20);
+  expect(Math.abs(player.y - 220)).toBeLessThan(25);
+  await page.keyboard.press('e');
+  await expect(page.getByRole('heading', { name: 'Clareira dos animais' })).toBeVisible();
+  expect(errors).toEqual([]);
+});
