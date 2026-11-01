@@ -51,8 +51,7 @@ async function solve(page, chapter, spot) {
   } else if (chapter === 1) {
     for (const [step, answer] of [0, 1, 0].entries()) { await page.locator('[data-choice="' + answer + '"]').click(); if (step < 2) await page.locator('#arkNext').click(); }
   } else if (chapter === 2) {
-    for (const lane of ['NORTE', 'CENTRO', 'SUL', 'CENTRO', 'NORTE'])
-      await page.locator('[data-lane="' + lane + '"]').click();
+    for (const [step, answer] of [1, 0, 2].entries()) { await page.locator('[data-lane="' + answer + '"]').click(); if (step < 2) await page.locator('#mosesNext').click(); }
   } else if (chapter === 3) {
     await page.locator('[data-answer="0"]').click();
   } else if (chapter === 4) {
@@ -319,4 +318,80 @@ test('Arca de Noé: reabrir ponto concluído não reinicia o desafio', async ({ 
   const state = await page.evaluate(() => window.__TLS_TEST__.getState());
   expect(state.found).toContain(1);
   expect(state.mode).toBe('play');
+});
+
+
+test('Travessia do Mar: cada etapa rejeita escolha incorreta e permite tentar novamente', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(2));
+  await interact(page, 1);
+
+  await expect(page.locator('h3')).toHaveText('ENCONTRE A ABERTURA');
+  await page.locator('[data-lane="0"]').click();
+  await expect(page.getByRole('heading', { name: 'OBSERVE AS ÁGUAS' })).toBeVisible();
+  await page.locator('#mosesRetry').click();
+  await expect(page.locator('h3')).toHaveText('ENCONTRE A ABERTURA');
+  await page.locator('[data-lane="1"]').click();
+  await expect(page.getByRole('heading', { name: 'ETAPA CONCLUÍDA' })).toBeVisible();
+  await page.locator('#mosesNext').click();
+  await expect(page.locator('h3')).toHaveText('ATRAVESSE O CAMINHO SECO');
+  expect(errors).toEqual([]);
+});
+
+test('Travessia do Mar: progresso avança em três etapas sem pular nenhuma', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(2));
+  await interact(page, 1);
+  const progress = page.locator('.moses-progress');
+  await expect(progress).toHaveAttribute('aria-valuenow', '0');
+
+  await page.locator('[data-lane="1"]').click();
+  await page.locator('#mosesNext').click();
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+  await expect(page.locator('h3')).toHaveText('ATRAVESSE O CAMINHO SECO');
+
+  await page.locator('[data-lane="0"]').click();
+  await page.locator('#mosesNext').click();
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+  await expect(page.locator('h3')).toHaveText('ALCANCE A OUTRA MARGEM');
+});
+
+test('Travessia do Mar: conclusão só registra o ponto depois da terceira etapa', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(2));
+  await interact(page, 1);
+
+  await page.locator('[data-lane="1"]').click();
+  await page.locator('#mosesNext').click();
+  let state = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(state.found).not.toContain(1);
+
+  await page.locator('[data-lane="0"]').click();
+  await page.locator('#mosesNext').click();
+  state = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(state.found).not.toContain(1);
+
+  await page.locator('[data-lane="2"]').click();
+  await expect(page.getByRole('heading', { name: 'TRAVESSIA CONCLUÍDA' })).toBeVisible();
+  await page.locator('#mosesDone').click();
+  await expect(page.getByRole('heading', { name: 'Caminho entre as águas' })).toBeVisible();
+  state = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(state.found).toContain(1);
+});
+
+test('Travessia do Mar: botões e texto das etapas permanecem utilizáveis em tela mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(2));
+  await interact(page, 1);
+  await expect(page.locator('#overlay')).toBeVisible();
+  await expect(page.locator('[data-lane]')).toHaveCount(3);
+  for (const button of await page.locator('[data-lane]').all()) {
+    const box = await button.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box.width).toBeGreaterThan(0);
+    expect(box.height).toBeGreaterThan(0);
+  }
 });
