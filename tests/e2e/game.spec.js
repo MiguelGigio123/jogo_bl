@@ -110,3 +110,35 @@ test('mantém o jogador dentro da área caminhável e renderiza texto em alta re
   expect(player.y).toBeGreaterThanOrEqual(128);
   expect(player.y).toBeLessThanOrEqual(258);
 });
+
+test('Éden: três pistas liberam a clareira oriental e o enigma final', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(0));
+  for (const spot of [0, 1, 2]) {
+    await page.evaluate(i => window.__TLS_TEST__.interactSpot(i), spot);
+    await expect(page.getByRole('button', { name: 'CONTINUAR' })).toBeVisible();
+    await page.getByRole('button', { name: 'CONTINUAR' }).click();
+  }
+  let status = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(status.edenBridge).toBe(true);
+  await page.evaluate(() => window.__TLS_TEST__.interactSpot(3));
+  await page.locator('[data-eden="knowledge"]').click();
+  await expect(page.getByRole('heading', { name: 'CAPÍTULO CONCLUÍDO' })).toBeVisible();
+  status = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(status.found).toEqual([0, 1, 2, 3]);
+  expect(errors).toEqual([]);
+});
+
+test('Éden: câmera acompanha o jogador sem sair dos limites do mundo', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(0));
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(2500);
+  await page.keyboard.up('ArrowRight');
+  const s = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(s.x).toBeLessThanOrEqual(876);
+  expect(s.cameraX).toBeGreaterThanOrEqual(0);
+  expect(s.cameraX).toBeLessThanOrEqual(388);
+});
