@@ -56,7 +56,11 @@ async function solve(page, chapter, spot) {
     for (const [step, answer] of [0, 1, 1].entries()) { await page.locator('[data-jesus="'+answer+'"]').click(); if (step < 2) await page.locator('#jesusNext').click(); }
     await page.locator('#jesusDone').click();
   } else if (chapter === 4) {
-    for (const answer of [1, 1, 0, 0]) await page.locator('[data-j="' + answer + '"]').click();
+    for (const [step, answer] of [1, 0, 0, 1].entries()) {
+      await page.locator('[data-j="' + answer + '"]').click();
+      if (step < 3) await page.locator('#jacobNext').click();
+    }
+    await page.locator('#jacobDone').click();
   } else if (chapter === 5) {
     for (const size of [2, 1, 3, 2, 3, 1]) await page.locator('[data-size="' + size + '"]').click();
   } else if (chapter === 6) {
