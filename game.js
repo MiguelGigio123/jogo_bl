@@ -45,7 +45,37 @@ function interact(){if(state.mode!=='play')return;state.action='interact';state.
 if(state.chapter===0&&kind==='river'){puzzleRiver(i);return;}if(state.chapter===0&&kind==='choice'){if(!state.edenBridge){show('A PONTE AINDA ESTÁ FECHADA','<p>Antes de atravessar, encontre as três pistas nas clareiras do jardim: observe os animais, siga o rio e examine a árvore da vida.</p>','<button id="ok">VOLTAR AO JARDIM</button>');button('ok',hide);return;}puzzleEden(i);return;}if(kind==='pairs'){puzzleNoah(i);return;}if(kind==='route'){puzzleMoses(i);return;}if(kind.startsWith('story')){puzzleJesus(i);return;}if(kind==='struggle'){puzzleJacob(i);return;}if(kind==='crowd'){puzzleBread(i);return;}if(kind==='focus'){puzzleDavid(i);return;}finishSpot(i);}
 function puzzleRiver(i){state.mode='puzzle';const selected=new Set();const names=['PISOM','GIOM','TIGRE','EUFRATES','JORDÃO'];const render=()=>{show('AS QUATRO NASCENTES','<p>O rio que saía do Éden se dividia em quatro braços. Marque os quatro nomes citados em Gênesis 2:10–14.</p><p class="small">Selecione quatro opções e confirme sua observação.</p>',names.map((n,j)=>'<button data-river="'+j+'" aria-pressed="'+selected.has(j)+'" style="'+(selected.has(j)?'background:#b18b50;color:#fff':'')+'">'+(selected.has(j)?'✓ ':'')+n+'</button>').join('')+'<button id="confirmRivers">CONFIRMAR</button>');panel.querySelectorAll('[data-river]').forEach(b=>b.onclick=()=>{const j=+b.dataset.river;if(selected.has(j))selected.delete(j);else if(selected.size<4)selected.add(j);render();});button('confirmRivers',()=>{const right=[0,1,2,3].every(j=>selected.has(j))&&selected.size===4;if(right){state.mode='play';state.action='special';state.actionUntil=performance.now()+900;finishSpot(i);}else{show('RELEIA A DESCRIÇÃO','<p>Confira Gênesis 2:10–14. O texto apresenta quatro rios que saem do rio do Éden.</p>','<button id="retry">TENTAR NOVAMENTE</button>');button('retry',()=>{selected.clear();render();});}});};render();}
 function puzzleEden(i){state.mode='puzzle';show('A ESCOLHA NO JARDIM','<p>Você reuniu as três pistas e atravessou a ponte. O relato apresenta duas árvores especiais. Qual delas está ligada ao mandamento de Gênesis 2:16–17?</p>','<button data-eden="life">Árvore da vida</button><button data-eden="knowledge">Árvore do conhecimento do bem e do mal</button>');panel.querySelectorAll('[data-eden]').forEach(b=>b.onclick=()=>{if(b.dataset.eden==='knowledge'){state.mode='play';state.action='special';state.actionUntil=performance.now()+900;finishSpot(i);}else{show('RELEIA GÊNESIS 2:16–17','<p>O texto distingue a árvore da vida da árvore do conhecimento do bem e do mal. Tente identificar qual aparece no mandamento.</p>','<button id="retry">TENTAR NOVAMENTE</button>');button('retry',()=>puzzleEden(i));}});}
-function puzzleNoah(i){state.mode='puzzle';state.challenge=0;const rounds=[{q:'Qual par deve permanecer junto?',a:['Leões','Leões e aves','Peixes e aves'],ok:0},{q:'Agora escolha um par do mesmo tipo.',a:['Aves e peixes','Aves','Leões e peixes'],ok:1},{q:'Última organização: qual grupo é coerente?',a:['Animais terrestres iguais','Animais de tipos misturados','Aves com peixes'],ok:0}];const render=()=>{const r=rounds[state.challenge];show('ORGANIZE A ARCA · ETAPA '+(state.challenge+1)+' / 3','<p>'+r.q+'</p><p class="small">Desafio de classificação inspirado na organização dos animais descrita em Gênesis 7:8–9.</p>',r.a.map((a,j)=>'<button data-choice="'+j+'">'+a+'</button>').join(''));panel.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{if(+b.dataset.choice===r.ok){state.challenge++;if(state.challenge===rounds.length){state.mode='play';state.action='special';state.actionUntil=performance.now()+900;finishSpot(i);}else render();}else{show('OBSERVE COM ATENÇÃO','<p>O objetivo é reconhecer os grupos de animais sem misturar categorias.</p>','<button id="retry">REVER A ETAPA</button>');button('retry',render);}});};render();}
+function puzzleNoah(i){
+ state.mode='puzzle';state.challenge=0;
+ const rounds=[
+  {title:'BAIA DOS ANIMAIS TERRESTRES',q:'O primeiro compartimento precisa receber um par de animais terrestres da mesma espécie.',a:['Dois leões','Um leão e uma ave','Um peixe e uma ave'],ok:0,feedback:'O par de leões pertence ao grupo dos animais terrestres.'},
+  {title:'ESPAÇO DAS AVES',q:'Agora organize o espaço reservado às aves.',a:['Dois peixes','Duas aves','Um cavalo e uma ave'],ok:1,feedback:'As aves ficam juntas em seu próprio espaço.'},
+  {title:'SUPRIMENTOS DA JORNADA',q:'Antes da chuva, Noé também precisa conferir os suprimentos para a viagem.',a:['Água e alimento armazenados','Pedras e ferramentas sem uso','Objetos espalhados pelo convés'],ok:0,feedback:'Água e alimento organizados ajudam a cuidar de todos durante a jornada.'}
+ ];
+ const render=()=>{
+  const r=rounds[state.challenge];
+  show('A ARCA DE NOÉ · ORGANIZAÇÃO '+(state.challenge+1)+' / 3',
+   '<div class="ark-progress" aria-label="Progresso da organização"><div style="width:'+((state.challenge)/3*100)+'%"></div></div><p class="small">COMPARTIMENTO '+(state.challenge+1)+' DE 3</p><h3>'+r.title+'</h3><p>'+r.q+'</p><p class="small">Gênesis 6:19–21; 7:2–3</p>',
+   r.a.map((a,j)=>'<button data-choice="'+j+'">'+a+'</button>').join(''));
+  panel.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{
+   if(+b.dataset.choice===r.ok){
+    state.challenge++;
+    if(state.challenge===rounds.length){
+     state.mode='play';state.action='special';state.actionUntil=performance.now()+1300;
+     show('A ARCA ESTÁ ORGANIZADA','<p>Os compartimentos foram preparados e os suprimentos conferidos.</p><p class="small">A chuva se aproxima. Noé e sua família estão prontos para a jornada.</p>','<button id="arkDone">CONTINUAR</button>');
+     button('arkDone',()=>finishSpot(i));
+    }else{
+     show('BOA ORGANIZAÇÃO!','<p>'+r.feedback+'</p><p class="small">O próximo compartimento ainda precisa ser preparado.</p>','<button id="arkNext">PRÓXIMO COMPARTIMENTO</button>');
+     button('arkNext',render);
+    }
+   }else{
+    show('VAMOS ORGANIZAR NOVAMENTE','<p>Observe o que este compartimento precisa receber e escolha a opção correspondente.</p>','<button id="arkRetry">TENTAR DE NOVO</button>');
+    button('arkRetry',render);
+   }
+  });
+ };
+ render();
+}
 function puzzleMoses(i){state.mode='puzzle';state.challenge=0;const sequence=['NORTE','CENTRO','SUL','CENTRO','NORTE'];show('ENCONTRE A PASSAGEM','<p>Escolha a faixa livre em cada trecho. Observe a sequência das marcas no caminho.</p><h2 id="routeStep">TRECHO 1 DE 5</h2>','<button data-lane="NORTE">NORTE</button><button data-lane="CENTRO">CENTRO</button><button data-lane="SUL">SUL</button>');const pattern=['NORTE','CENTRO','SUL','CENTRO','NORTE'];panel.querySelectorAll('[data-lane]').forEach(b=>b.onclick=()=>{if(b.dataset.lane===pattern[state.challenge]){state.challenge++;if(state.challenge===5){state.mode='play';finishSpot(i);}else document.querySelector('#routeStep').textContent='TRECHO '+(state.challenge+1)+' DE 5';}else{state.challenge=0;document.querySelector('#routeStep').textContent='CAMINHO RECOMEÇADO · TRECHO 1 DE 5';}});}
 function puzzleJesus(i){const qs=[
 ['Na parábola, quem demonstrou cuidado pelo homem ferido?',['O samaritano','O ladrão','O viajante'],0],
