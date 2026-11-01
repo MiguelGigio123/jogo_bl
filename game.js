@@ -107,11 +107,48 @@ function puzzleMoses(i){
  };
  render();
 }
-function puzzleJesus(i){const qs=[
-['Na parábola, quem demonstrou cuidado pelo homem ferido?',['O samaritano','O ladrão','O viajante'],0],
-['O que Jesus fez durante a tempestade?',['Acalmou o vento e o mar','Construiu um barco','Chamou a chuva'],0],
-['Como o pai recebe o filho que retorna?',['Com acolhimento','Com indiferença','Mandando-o embora'],0]
-][i];state.mode='puzzle';show(['O BOM SAMARITANO','A TEMPESTADE ACALMADA','O FILHO PRÓDIGO'][i],'<p>'+qs[0]+'</p>',qs[1].map((a,j)=>'<button data-answer="'+j+'">'+a+'</button>').join(''));panel.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{if(+b.dataset.answer===qs[2]){state.mode='play';finishSpot(i);}else show('RELEMBRE A PASSAGEM','<p>Leia novamente a pergunta e tente outra resposta.</p>','<button id="retry">TENTAR DE NOVO</button>'),button('retry',()=>puzzleJesus(i));});}
+function puzzleJesus(i){
+ const stories=[
+  {title:'O BOM SAMARITANO',ref:'LUCAS 10:25–37',stages:[
+   {q:'Ao encontrar o homem ferido, qual é a primeira atitude do samaritano?',a:['Aproximar-se para ajudar','Ignorar e seguir viagem','Culpar o homem'],ok:0,tip:'O samaritano se aproxima e demonstra compaixão.'},
+   {q:'Como ele cuida do homem?',a:['Deixa-o sozinho','Trata seus ferimentos','Pede que caminhe sem ajuda'],ok:1,tip:'Ele trata os ferimentos e cuida dele.'},
+   {q:'O que faz em seguida?',a:['Vai embora sem olhar para trás','Leva-o a um lugar seguro e providencia cuidado','Espera que outra pessoa resolva'],ok:1,tip:'Ele o leva a uma hospedaria e se responsabiliza pelo cuidado.'}
+  ]},
+  {title:'A TEMPESTADE ACALMADA',ref:'MARCOS 4:35–41',stages:[
+   {q:'Durante a travessia, o que acontece com o barco?',a:['Começa uma grande tempestade','Chega imediatamente à praia','O céu fica completamente sem nuvens'],ok:0,tip:'Uma forte tempestade ameaça a travessia.'},
+   {q:'O que os discípulos fazem?',a:['Abandonam todos os companheiros','Acordam Jesus e pedem ajuda','Começam outra viagem'],ok:1,tip:'Os discípulos acordam Jesus, preocupados com a tempestade.'},
+   {q:'O que acontece depois?',a:['Jesus repreende o vento e o mar se acalma','A tempestade fica mais forte','O barco desaparece'],ok:0,tip:'Jesus ordena que o vento e o mar se acalmem.'}
+  ]},
+  {title:'O FILHO PRÓDIGO',ref:'LUCAS 15:11–32',stages:[
+   {q:'Depois de perceber seu erro, o que o filho decide fazer?',a:['Continuar distante','Voltar para a casa do pai','Esquecer sua família'],ok:1,tip:'O filho reconhece sua situação e decide voltar.'},
+   {q:'Como o filho se apresenta ao pai?',a:['Reconhece que errou','Exige uma festa','Finge que nada aconteceu'],ok:0,tip:'Ele reconhece seu erro e pede para ser recebido.'},
+   {q:'Como o pai reage ao ver o filho?',a:['Recebe-o com compaixão','Finge que não o conhece','Manda-o embora'],ok:0,tip:'O pai o recebe com alegria e compaixão.'}
+  ]}
+ ];
+ const story=stories[i];state.mode='puzzle';state.challenge=0;
+ const render=()=>{
+  const stage=story.stages[state.challenge];
+  show(story.title+' · ETAPA '+(state.challenge+1)+' / 3',
+   '<div class="jesus-progress" role="progressbar" aria-label="Progresso da história" aria-valuemin="0" aria-valuemax="3" aria-valuenow="'+state.challenge+'"><div style="width:'+(state.challenge/3*100)+'%"></div></div><p class="small">'+story.ref+'</p><h3>'+['OBSERVE','ESCOLHA A ATITUDE','DESCUBRA O DESFECHO'][state.challenge]+'</h3><p>'+stage.q+'</p>',
+   stage.a.map((v,j)=>'<button data-jesus="'+j+'">'+v+'</button>').join(''));
+  panel.querySelectorAll('[data-jesus]').forEach(b=>b.onclick=()=>{
+   if(+b.dataset.jesus!==stage.ok){
+    show('RELEMBRE A HISTÓRIA','<p>Observe os acontecimentos e tente novamente. '+story.ref+'.</p>','<button id="jesusRetry">TENTAR NOVAMENTE</button>');
+    button('jesusRetry',render);return;
+   }
+   state.challenge++;
+   if(state.challenge===story.stages.length){
+    state.mode='play';state.action='special';state.actionUntil=performance.now()+1100;
+    show('HISTÓRIA DESCOBERTA','<p>'+stage.tip+'</p><p class="small">Você concluiu esta parte dos Evangelhos.</p>','<button id="jesusDone">CONTINUAR</button>');
+    button('jesusDone',()=>finishSpot(i));
+   }else{
+    show('VOCÊ AVANÇOU','<p>'+stage.tip+'</p>','<button id="jesusNext">PRÓXIMA ETAPA</button>');
+    button('jesusNext',render);
+   }
+  });
+ };
+ render();
+}
 function puzzleJacob(i){state.mode='puzzle';state.challenge=0;const order=['NOITE','ENCONTRO','PERSEVERANÇA','AMANHECER'];const options=[['AMANHECER','NOITE','MEIO-DIA'],['PERSEVERANÇA','ENCONTRO','PARTIDA'],['ENCONTRO','AMANHECER','NOITE'],['AMANHECER','NOITE','TARDE']];const correct=[1,1,0,0];const render=()=>{show('A JORNADA DE JACÓ · '+(state.challenge+1)+' / 4','<p>Organize os acontecimentos da narrativa até o romper do dia.</p><h2>'+order[state.challenge]+'</h2><p class="small">Gênesis 32:22–28</p>',options[state.challenge].map((v,j)=>'<button data-j="'+j+'">'+v+'</button>').join(''));panel.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>{if(+b.dataset.j===correct[state.challenge]){state.challenge++;if(state.challenge===4){state.mode='play';state.action='special';state.actionUntil=1000+performance.now();finishSpot(i);}else render();}else{show('RECONSTRUA A SEQUÊNCIA','<p>Observe a progressão do relato: Jacó fica sozinho à noite, vive o encontro e chega ao amanhecer transformado.</p>','<button id="retry">TENTAR ETAPA NOVAMENTE</button>');button('retry',render);}});};render();}
 function puzzleBread(i){state.mode='puzzle';state.challenge=0;const portions=[2,1,3,2,3,1];const render=()=>{const n=portions[state.challenge];show('DISTRIBUIÇÃO ORGANIZADA · '+(state.challenge+1)+' / 6','<p>Escolha o tamanho do próximo grupo para manter a distribuição organizada.</p><h2 id="served">GRUPO '+(state.challenge+1)+' · '+n+' PESSOAS</h2><p class="small">Os tamanhos são uma abstração de jogo, não números apresentados no texto bíblico.</p>','<button data-size="1">PEQUENO · 1</button><button data-size="2">MÉDIO · 2</button><button data-size="3">GRANDE · 3</button>');panel.querySelectorAll('[data-size]').forEach(b=>b.onclick=()=>{if(+b.dataset.size===n){state.challenge++;if(state.challenge>=portions.length){state.mode='play';state.action='special';state.actionUntil=performance.now()+1000;finishSpot(i);}else render();}else{show('REORGANIZE A DISTRIBUIÇÃO','<p>Compare o tamanho pedido para este grupo com a opção escolhida.</p>','<button id="retry">TENTAR NOVAMENTE</button>');button('retry',render);}});};render();}
 function puzzleDavid(i){state.mode='puzzle';show('A ESCOLHA DE DAVI','<p>Diante do desafio, qual atitude melhor representa a confiança que Davi expressa no relato?</p>','<button data-david="trust">Confiar no Senhor</button><button data-david="fear">Desistir por medo</button><button data-david="pride">Confiar apenas na própria aparência</button>');panel.querySelectorAll('[data-david]').forEach(b=>b.onclick=()=>{if(b.dataset.david==='trust'){state.mode='play';finishSpot(i);}else{show('RELEIA O RELATO','<p>Observe as palavras de Davi em 1 Samuel 17:45–47 e tente novamente.</p>','<button id="retry">TENTAR NOVAMENTE</button>');button('retry',()=>puzzleDavid(i));}});}
