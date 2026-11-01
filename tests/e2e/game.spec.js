@@ -243,3 +243,80 @@ test('Arca de Noé: progresso só é registrado depois de concluir as três etap
   state = await page.evaluate(() => window.__TLS_TEST__.getState());
   expect(state.found).toContain(1);
 });
+
+
+test('Arca de Noé: indicador de progresso acompanha cada compartimento', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(1));
+  await interact(page, 1);
+
+  const progress = page.locator('.ark-progress div');
+  await expect(progress).toHaveCSS('width', '0px');
+  await page.locator('[data-choice="0"]').click();
+  await page.locator('#arkNext').click();
+  await expect(page.locator('h3')).toHaveText('ESPAÇO DAS AVES');
+  await expect(progress).toHaveAttribute('style', /width:\s*33\.33333333333333%/);
+
+  await page.locator('[data-choice="1"]').click();
+  await page.locator('#arkNext').click();
+  await expect(page.locator('h3')).toHaveText('SUPRIMENTOS DA JORNADA');
+  await expect(progress).toHaveAttribute('style', /width:\s*66\.66666666666666%/);
+});
+
+test('Arca de Noé: não permite avançar com clique repetido ou resposta errada', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(1));
+  await interact(page, 1);
+
+  await page.locator('[data-choice="2"]').click();
+  await expect(page.getByRole('heading', { name: 'VAMOS ORGANIZAR NOVAMENTE' })).toBeVisible();
+  await page.locator('#arkRetry').click();
+  await expect(page.locator('h3')).toHaveText('BAIA DOS ANIMAIS TERRESTRES');
+
+  await page.locator('[data-choice="0"]').click();
+  await expect(page.getByRole('heading', { name: 'BOA ORGANIZAÇÃO!' })).toBeVisible();
+  await page.locator('#arkNext').click();
+  await expect(page.locator('h3')).toHaveText('ESPAÇO DAS AVES');
+  await expect(page.locator('[data-choice]')).toHaveCount(3);
+  await expect(page.locator('#arkNext')).toHaveCount(0);
+});
+
+test('Arca de Noé: conclusão é salva no armazenamento local', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(1));
+  await interact(page, 1);
+
+  for (const [step, answer] of [0, 1, 0].entries()) {
+    await page.locator('[data-choice="' + answer + '"]').click();
+    if (step < 2) await page.locator('#arkNext').click();
+  }
+  await expect(page.getByRole('heading', { name: 'A ARCA ESTÁ ORGANIZADA' })).toBeVisible();
+  await page.locator('#arkDone').click();
+  await page.getByRole('button', { name: 'CONTINUAR' }).click();
+
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('tls_save_v3')));
+  expect(saved.chapter).toBe(1);
+  expect(saved.found).toContain(1);
+  expect(errors).toEqual([]);
+});
+
+test('Arca de Noé: reabrir ponto concluído não reinicia o desafio', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(1));
+  await interact(page, 1);
+
+  for (const [step, answer] of [0, 1, 0].entries()) {
+    await page.locator('[data-choice="' + answer + '"]').click();
+    if (step < 2) await page.locator('#arkNext').click();
+  }
+  await page.locator('#arkDone').click();
+  await page.getByRole('button', { name: 'CONTINUAR' }).click();
+
+  await page.evaluate(() => window.__TLS_TEST__.interactSpot(1));
+  await expect(page.locator('#overlay')).toHaveClass(/hidden/);
+  const state = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(state.found).toContain(1);
+  expect(state.mode).toBe('play');
+});
