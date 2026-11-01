@@ -1,0 +1,105 @@
+{
+  "title": "THE BIBLE: LOST SECRETS",
+  "build": "0.2-rebuild",
+  "internal_resolution": [
+    256,
+    144
+  ],
+  "scenes": {
+    "eden": "assets/scenes/eden.png",
+    "noah": "assets/scenes/noah.png",
+    "moses": "assets/scenes/moses.png",
+    "jesus": "assets/scenes/jesus.png",
+    "jacob": "assets/scenes/jacob.png",
+    "bread": "assets/scenes/bread.png",
+    "david": "assets/scenes/david.png"
+  },
+  "characters": {
+    "explorer": {
+      "walk": "assets/characters/explorer_walk_4dir.png",
+      "idle": "assets/characters/explorer_idle.png",
+      "frame": [
+        32,
+        40
+      ],
+      "layout": "4 directions x 4 frames"
+    },
+    "adam": {
+      "walk": "assets/characters/adam_walk_4dir.png",
+      "idle": "assets/characters/adam_idle.png",
+      "frame": [
+        32,
+        40
+      ],
+      "layout": "4 directions x 4 frames"
+    },
+    "eve": {
+      "walk": "assets/characters/eve_walk_4dir.png",
+      "idle": "assets/characters/eve_idle.png",
+      "frame": [
+        32,
+        40
+      ],
+      "layout": "4 directions x 4 frames"
+    },
+    "noah": {
+      "walk": "assets/characters/noah_walk_4dir.png",
+      "idle": "assets/characters/noah_idle.png",
+      "frame": [
+        32,
+        40
+      ],
+      "layout": "4 directions x 4 frames"
+    },
+    "moses": {
+      "walk": "assets/characters/moses_walk_4dir.png",
+      "idle": "assets/characters/moses_idle.png",
+      "frame": [
+        32,
+        40
+      ],
+      "layout": "4 directions x 4 frames"
+    },
+    "jacob": {
+      "walk": "assets/characters/jacob_walk_4dir.png",
+      "idle": "assets/characters/jacob_idle.png",
+      "frame": [
+        32,
+        40
+      ],
+      "layout": "4 directions x 4 frames"
+    },
+    "jesus": {
+      "walk": "assets/characters/jesus_walk_4dir.png",
+      "idle": "assets/characters/jesus_idle.png",
+      "frame": [
+        32,
+        40
+      ],
+      "layout": "4 directions x 4 frames"
+    },
+    "david": {
+      "walk": "assets/characters/david_walk_4dir.png",
+      "idle": "assets/characters/david_idle.png",
+      "frame": [
+        32,
+        40
+      ],
+      "layout": "4 directions x 4 frames"
+    },
+    "goliath": {
+      "walk": "assets/characters/goliath_walk_4dir.png",
+      "idle": "assets/characters/goliath_idle.png",
+      "frame": [
+        32,
+        40
+      ],
+      "layout": "4 directions x 4 frames"
+    }
+  },
+  "audio": {
+    "music": "assets/audio/music/",
+    "sfx": "assets/audio/sfx/",
+    "music_enabled": false
+  }
+}

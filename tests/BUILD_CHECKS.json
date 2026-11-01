@@ -1,0 +1,11 @@
+{
+  "javascript_syntax": "PASS",
+  "png_integrity": "PASS",
+  "scene_count": 7,
+  "character_png_count": 18,
+  "chapters": 7,
+  "canvas_internal_resolution": "256x144",
+  "browser_headless": "BLOCKED_BY_ENVIRONMENT",
+  "manual_gameplay": "NOT_RUN",
+  "playwright": "ERR_BLOCKED_BY_ADMINISTRATOR"
+}
