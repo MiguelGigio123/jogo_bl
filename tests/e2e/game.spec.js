@@ -180,3 +180,66 @@ test('Éden: jogador consegue caminhar fisicamente até a clareira dos animais e
   await expect(page.getByRole('heading', { name: 'Clareira dos animais' })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+
+test('Arca de Noé: cada etapa rejeita resposta incorreta e permite tentar novamente', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(1));
+  await interact(page, 1);
+
+  const stages = [
+    { wrong: 1, right: 0, title: 'BAIA DOS ANIMAIS TERRESTRES' },
+    { wrong: 0, right: 1, title: 'ESPAÇO DAS AVES' },
+    { wrong: 2, right: 0, title: 'SUPRIMENTOS DA JORNADA' }
+  ];
+
+  for (let index = 0; index < stages.length; index++) {
+    const stage = stages[index];
+    await expect(page.getByRole('heading', { name: /A ARCA DE NOÉ/ })).toBeVisible();
+    await expect(page.locator('h3')).toHaveText(stage.title);
+
+    await page.locator('[data-choice="' + stage.wrong + '"]').click();
+    await expect(page.getByRole('heading', { name: 'VAMOS ORGANIZAR NOVAMENTE' })).toBeVisible();
+    await page.locator('#arkRetry').click();
+    await expect(page.locator('h3')).toHaveText(stage.title);
+
+    await page.locator('[data-choice="' + stage.right + '"]').click();
+    if (index < stages.length - 1) {
+      await expect(page.getByRole('heading', { name: 'BOA ORGANIZAÇÃO!' })).toBeVisible();
+      await page.locator('#arkNext').click();
+    }
+  }
+
+  await expect(page.getByRole('heading', { name: 'A ARCA ESTÁ ORGANIZADA' })).toBeVisible();
+  await expect(page.locator('#arkDone')).toBeVisible();
+  await page.locator('#arkDone').click();
+  await expect(page.getByRole('heading', { name: 'Compartimentos' })).toBeVisible();
+  const state = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(state.found).toContain(1);
+  expect(errors).toEqual([]);
+});
+
+test('Arca de Noé: progresso só é registrado depois de concluir as três etapas', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(1));
+  await interact(page, 1);
+
+  await page.locator('[data-choice="0"]').click();
+  await page.locator('#arkNext').click();
+  let state = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(state.found).not.toContain(1);
+  await expect(page.locator('h3')).toHaveText('ESPAÇO DAS AVES');
+
+  await page.locator('[data-choice="1"]').click();
+  await page.locator('#arkNext').click();
+  state = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(state.found).not.toContain(1);
+  await expect(page.locator('h3')).toHaveText('SUPRIMENTOS DA JORNADA');
+
+  await page.locator('[data-choice="0"]').click();
+  await page.locator('#arkDone').click();
+  state = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(state.found).toContain(1);
+});
