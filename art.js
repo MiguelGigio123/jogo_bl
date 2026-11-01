@@ -65,6 +65,15 @@ function scene(c,id,t){
   px(c,156,70,200,218,'#c8b58a');px(c,166,72,180,216,'#e1d1a7');
   for(let i=0;i<24;i++)rock(c,170+(i*53)%175,90+(i*31)%180,12,9);
   for(let i=0;i<15;i++){px(c,5+i*33,60+(i%4)*42,20,2,'#b4d8d7');}
+  // Animated foam and glints make the towering water feel alive while keeping the path clear
+  for(let i=0;i<22;i++){
+   const y=66+(i*29)%210, drift=(t*18+i*37)%138;
+   px(c,(drift+Math.floor(y/13)*4)%138,y,18,2,'#a8d5d2');
+   px(c,374+(drift+Math.floor(y/11)*3)%132,y+5,16,2,'#a8d5d2');
+  }
+  const shimmer= Math.sin(t*2.2)*3;
+  px(c,156,70+shimmer,200,2,'#e9e0b9');
+  px(c,156,282-shimmer,200,2,'#b9d4c4');
  }else if(id==='jesus'){
   px(c,0,0,512,288,'#9da77e');px(c,0,0,512,96,'#b8b88e');
   for(let i=0;i<6;i++)building(c,15+i*88,65+(i%2)*7,58,67,'#b99b72');
