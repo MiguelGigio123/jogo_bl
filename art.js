@@ -81,6 +81,11 @@ function scene(c,id,t){
   // village square and olive trees
   px(c,0,206,512,40,'#b99c70');for(let i=0;i<7;i++)tree(c,40+i*76,175,.55);
   for(let i=0;i<5;i++)bush(c,20+i*118,252,'#4b6a45');
+   // Jesus chapter: a village square, a shaded gathering place and the road between homes
+  // animate the olive leaves and warm afternoon light without obscuring the walkable paths
+  for(let i=0;i<10;i++){const sway=Math.sin(t*1.4+i)*2;px(c,28+i*51,46+sway,2,9,'#647e4c');}
+  px(c,204,184,104,3,'#d7c39a');px(c,214,188,84,2,'#e8d7ae');
+  for(let i=0;i<4;i++){const x=70+i*122;px(c,x,246,20,7,'#72543b');px(c,x+4,242,12,4,'#d2b47e');}
  }else if(id==='jacob'){
   px(c,0,0,512,288,'#20283d');for(let i=0;i<100;i++){let x=(i*67)%512,y=(i*37)%170;px(c,x,y,2,2,'#e9dfb9');}
   px(c,0,172,512,116,'#4d5360');px(c,0,188,512,35,'#456b78');px(c,0,195,512,4,'#91b3b1');
