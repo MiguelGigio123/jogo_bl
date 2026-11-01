@@ -73,6 +73,36 @@ function scene(c,id,t){
  // edge frame, subtle animated ambient motes
  c.globalAlpha=.16;for(let i=0;i<22;i++){let x=(i*71+t*(id==='moses'?8:1.5))%512,y=(i*43+Math.sin(t+i)*3)%288;px(c,x,y,2,2,'#fff1c5');}c.globalAlpha=1;
 }
+
+function edenWorld(c,t){
+ const W=900,H=560;
+ px(c,0,0,W,H,'#527b49');
+ // distant canopy and rolling garden terraces
+ px(c,0,0,W,112,'#9dbb91');px(c,0,94,W,38,'#789d6d');
+ for(let i=0;i<14;i++){tree(c,24+i*66,137+(i%3)*8,.8+(i%2)*.15);}
+ // winding river with banks, shallows and moving highlights
+ px(c,0,290,W,98,'#386f68');px(c,0,301,W,76,'#579c91');
+ for(let i=0;i<30;i++){const x=(i*43+t*9)%W;px(c,x,315+Math.sin(i+t*1.5)*18,25,3,'#a8d3b4');px(c,(x+17)%W,348+Math.cos(i+t)*12,16,2,'#d4e5bc');}
+ // walkable stone bridges and stepping stones
+ px(c,350,286,100,110,'#bba77a');px(c,358,291,84,100,'#d1bd8d');
+ for(let i=0;i<6;i++)rock(c,370+i*13,305+(i%2)*46,14,10);
+ // upper terrace, paths and flowering meadow
+ px(c,0,390,W,170,'#456b43');px(c,0,405,W,155,'#5c8149');
+ px(c,0,448,900,36,'#b9a57b');px(c,0,455,900,20,'#d0bd91');
+ for(let i=0;i<45;i++){const x=(i*97)%W,y=405+(i*29)%140;px(c,x,y,3,3,['#e7d68b','#e6b9a5','#d9d9a4'][i%3]);}
+ // distinct grove of life and knowledge, with stone borders
+ tree(c,215,270,1.85);tree(c,690,268,2.0);
+ for(let i=0;i<10;i++){bush(c,150+i*34,326,'#315b3d');bush(c,620+i*24,326,'#315b3d');}
+ // eastern locked gate and ancient stone marker
+ px(c,805,380,8,80,'#71543a');px(c,845,380,8,80,'#71543a');px(c,805,380,48,7,'#c5a66e');
+ px(c,820,420,18,35,'#8c8b75');px(c,824,425,10,3,'#d7cba5');
+ // animal clearing
+ for(let i=0;i<4;i++){const x=90+i*72,y=205+(i%2)*30;px(c,x,y,16,9,'#b68a5d');px(c,x+2,y-6,9,7,'#c99f70');px(c,x+8,y-9,5,5,'#c99f70');px(c,x+4,y+7,2,6,'#49392c');px(c,x+12,y+7,2,6,'#49392c');}
+ // trees, vines, flowers and canopy details
+ for(let i=0;i<26;i++){const x=(i*137+40)%W,y=170+(i*61)%210;bush(c,x,y,'#38633d');}
+ // gentle light shafts
+ c.globalAlpha=.08;for(let i=0;i<7;i++){c.fillStyle='#fff1b5';c.beginPath();c.moveTo(80+i*130,0);c.lineTo(130+i*130,0);c.lineTo(240+i*130,390);c.lineTo(190+i*130,390);c.fill();}c.globalAlpha=1;
+}
 function character(c,name,x,y,dir,frame,action,t){
  const base={
  explorer:{skin:'#b77d55',hair:'#34271f',robe:'#526e75',trim:'#d4b77b'},
@@ -102,5 +132,5 @@ function character(c,name,x,y,dir,frame,action,t){
  if(dir===0||dir===3){px(c,-3,-30,2,2,'#30251f');px(c,3,-30,2,2,'#30251f');}else px(c,dir===1?-5:3,-30,2,2,'#30251f');
  c.restore();
 }
-window.TLSArt={scene,character};
+window.TLSArt={scene,character,edenWorld};
 })();
