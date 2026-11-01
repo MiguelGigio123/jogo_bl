@@ -76,7 +76,37 @@ function puzzleNoah(i){
  };
  render();
 }
-function puzzleMoses(i){state.mode='puzzle';state.challenge=0;const sequence=['NORTE','CENTRO','SUL','CENTRO','NORTE'];show('ENCONTRE A PASSAGEM','<p>Escolha a faixa livre em cada trecho. Observe a sequência das marcas no caminho.</p><h2 id="routeStep">TRECHO 1 DE 5</h2>','<button data-lane="NORTE">NORTE</button><button data-lane="CENTRO">CENTRO</button><button data-lane="SUL">SUL</button>');const pattern=['NORTE','CENTRO','SUL','CENTRO','NORTE'];panel.querySelectorAll('[data-lane]').forEach(b=>b.onclick=()=>{if(b.dataset.lane===pattern[state.challenge]){state.challenge++;if(state.challenge===5){state.mode='play';finishSpot(i);}else document.querySelector('#routeStep').textContent='TRECHO '+(state.challenge+1)+' DE 5';}else{state.challenge=0;document.querySelector('#routeStep').textContent='CAMINHO RECOMEÇADO · TRECHO 1 DE 5';}});}
+function puzzleMoses(i){
+ state.mode='puzzle';state.challenge=0;
+ const stages=[
+  {title:'ENCONTRE A ABERTURA',question:'As águas estão diante do povo. Qual direção leva ao caminho que se abriu entre elas?',options:['MARGEM OESTE','CAMINHO CENTRAL','MAR ABERTO'],answer:1,success:'O caminho seco está entre as águas.'},
+  {title:'ATRAVESSE O CAMINHO SECO',question:'No trecho seguinte, onde o povo deve continuar caminhando?',options:['PELO CAMINHO SECO','DENTRO DA ÁGUA','DE VOLTA AO ACAMPAMENTO'],answer:0,success:'O povo continua pela passagem em terra seca.'},
+  {title:'ALCANCE A OUTRA MARGEM',question:'A travessia está quase completa. Qual é o próximo destino?',options:['RETORNAR AO EGITO','PARAR NO MEIO DO MAR','CHEGAR À OUTRA MARGEM'],answer:2,success:'A narrativa conta que o povo chegou à outra margem em segurança.'}
+ ];
+ const render=()=>{
+  const stage=stages[state.challenge];
+  show('A TRAVESSIA · ETAPA '+(state.challenge+1)+' DE 3',
+   '<div class="moses-progress" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="'+state.challenge+'"><div style="width:'+(state.challenge/3*100)+'%"></div></div><p class="small">ÊXODO 14:21–29</p><h3>'+stage.title+'</h3><p>'+stage.question+'</p>',
+   stage.options.map((v,j)=>'<button data-lane="'+j+'">'+v+'</button>').join(''));
+  panel.querySelectorAll('[data-lane]').forEach(b=>b.onclick=()=>{
+   if(+b.dataset.lane!==stage.answer){
+    show('OBSERVE AS ÁGUAS','<p>A passagem deve permanecer no caminho aberto em terra seca. Releia a etapa e tente novamente.</p>','<button id="mosesRetry">TENTAR NOVAMENTE</button>');
+    button('mosesRetry',render);
+    return;
+   }
+   state.challenge++;
+   if(state.challenge===stages.length){
+    state.mode='play';state.action='special';state.actionUntil=performance.now()+1800;
+    show('TRAVESSIA CONCLUÍDA','<p>O povo alcançou a outra margem. A passagem pelo mar foi concluída, conforme Êxodo 14:29–31.</p><p class="small">A jornada segue adiante.</p>','<button id="mosesDone">CONTINUAR</button>');
+    button('mosesDone',()=>finishSpot(i));
+   }else{
+    show('ETAPA CONCLUÍDA','<p>'+stage.success+'</p>','<button id="mosesNext">PRÓXIMA ETAPA</button>');
+    button('mosesNext',render);
+   }
+  });
+ };
+ render();
+}
 function puzzleJesus(i){const qs=[
 ['Na parábola, quem demonstrou cuidado pelo homem ferido?',['O samaritano','O ladrão','O viajante'],0],
 ['O que Jesus fez durante a tempestade?',['Acalmou o vento e o mar','Construiu um barco','Chamou a chuva'],0],
