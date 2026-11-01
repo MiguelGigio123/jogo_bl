@@ -53,7 +53,7 @@ async function solve(page, chapter, spot) {
   } else if (chapter === 2) {
     for (const [step, answer] of [1, 0, 2].entries()) { await page.locator('[data-lane="' + answer + '"]').click(); if (step < 2) await page.locator('#mosesNext').click(); }
   } else if (chapter === 3) {
-    for (const [step, answer] of [1, 1, 1].entries()) { await page.locator('[data-jesus="'+answer+'"]').click(); if (step < 2) await page.locator('#jesusNext').click(); }
+    for (const [step, answer] of [0, 1, 1].entries()) { await page.locator('[data-jesus="'+answer+'"]').click(); if (step < 2) await page.locator('#jesusNext').click(); }
     await page.locator('#jesusDone').click();
   } else if (chapter === 4) {
     for (const answer of [1, 1, 0, 0]) await page.locator('[data-j="' + answer + '"]').click();
@@ -90,7 +90,7 @@ test('os sete capítulos permitem concluir seus pontos de exploração e enigmas
       for (let spot = 0; spot < 3; spot++) {
         await interact(page, spot);
         for (let step = 0; step < 3; step++) {
-          const answer = [0, 1, 0][spot];
+          const answer = [[0, 1, 1], [0, 1, 0], [1, 0, 0]][spot][step];
           await page.locator('[data-jesus="'+answer+'"]').click();
           if (step < 2) await page.locator('#jesusNext').click();
         }
