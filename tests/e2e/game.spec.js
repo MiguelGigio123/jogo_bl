@@ -130,6 +130,7 @@ test('Éden: três pistas liberam a clareira oriental e o enigma final', async (
   expect(status.edenBridge).toBe(true);
   await page.evaluate(() => window.__TLS_TEST__.interactSpot(3));
   await page.locator('[data-eden="knowledge"]').click();
+  await page.getByRole('button', { name: 'CONTINUAR' }).click();
   await expect(page.getByRole('heading', { name: 'CAPÍTULO CONCLUÍDO' })).toBeVisible();
   status = await page.evaluate(() => window.__TLS_TEST__.getState());
   expect(status.found).toEqual([0, 1, 2, 3]);
