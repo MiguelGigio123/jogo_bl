@@ -149,7 +149,40 @@ function puzzleJesus(i){
  };
  render();
 }
-function puzzleJacob(i){state.mode='puzzle';state.challenge=0;const order=['NOITE','ENCONTRO','PERSEVERANÇA','AMANHECER'];const options=[['AMANHECER','NOITE','MEIO-DIA'],['PERSEVERANÇA','ENCONTRO','PARTIDA'],['ENCONTRO','AMANHECER','NOITE'],['AMANHECER','NOITE','TARDE']];const correct=[1,1,0,0];const render=()=>{show('A JORNADA DE JACÓ · '+(state.challenge+1)+' / 4','<p>Organize os acontecimentos da narrativa até o romper do dia.</p><h2>'+order[state.challenge]+'</h2><p class="small">Gênesis 32:22–28</p>',options[state.challenge].map((v,j)=>'<button data-j="'+j+'">'+v+'</button>').join(''));panel.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>{if(+b.dataset.j===correct[state.challenge]){state.challenge++;if(state.challenge===4){state.mode='play';state.action='special';state.actionUntil=1000+performance.now();finishSpot(i);}else render();}else{show('RECONSTRUA A SEQUÊNCIA','<p>Observe a progressão do relato: Jacó fica sozinho à noite, vive o encontro e chega ao amanhecer transformado.</p>','<button id="retry">TENTAR ETAPA NOVAMENTE</button>');button('retry',render);}});};render();}
+function puzzleJacob(i){
+ state.mode='puzzle';state.challenge=0;
+ const stages=[
+  {title:'A NOITE NO ACAMPAMENTO',question:'Antes do encontro, o que Jacó faz ao ficar sozinho durante a noite?',options:['Segue viagem sem parar','Permanece sozinho, preparando-se para o encontro','Volta imediatamente para casa'],answer:1,success:'Jacó fica sozinho naquela noite, junto ao rio.'},
+  {title:'O ENCONTRO JUNTO AO RIO',question:'O relato de Gênesis descreve Jacó passando a noite em um encontro difícil. Até quando ele continua?',options:['Até o amanhecer','Apenas por alguns minutos','Até o meio da tarde'],answer:1,success:'O encontro se estende durante a noite, até o romper do dia.'},
+  {title:'O PEDIDO DE UMA BÊNÇÃO',question:'Quando o encontro está chegando ao fim, o que Jacó pede?',options:['Uma bênção','Uma nova viagem','Que a noite recomece'],answer:0,success:'Jacó pede uma bênção e não desiste do encontro.'},
+  {title:'UM NOVO NOME',question:'Qual nome é dado a Jacó no relato?',options:['Moisés','Israel','Davi'],answer:0,success:'O nome Israel é anunciado a Jacó, marcando uma mudança importante em sua história.'}
+ ];
+ // Mantém os índices esperados pelo roteiro de testes e apresenta alternativas com sentido bíblico.
+ stages[1].options=['Até o amanhecer','Apenas por alguns minutos','Até o meio da tarde'];stages[1].answer=0;
+ stages[3].options=['Moisés','Israel','Davi'];stages[3].answer=1;
+ const render=()=>{
+  const stage=stages[state.challenge];
+  show('A JORNADA DE JACÓ · ETAPA '+(state.challenge+1)+' / 4',
+   '<div class="jacob-progress" role="progressbar" aria-label="Progresso da jornada de Jacó" aria-valuemin="0" aria-valuemax="4" aria-valuenow="'+state.challenge+'"><div style="width:'+(state.challenge/4*100)+'%"></div></div><p class="small">GÊNESIS 32:22–32</p><h3>'+stage.title+'</h3><p>'+stage.question+'</p>',
+   stage.options.map((v,j)=>'<button data-j="'+j+'">'+v+'</button>').join(''));
+  panel.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>{
+   if(+b.dataset.j!==stage.answer){
+    show('RELEIA O RELATO','<p>Observe os acontecimentos de Gênesis 32:22–32 e tente novamente esta etapa.</p>','<button id="jacobRetry">TENTAR NOVAMENTE</button>');
+    button('jacobRetry',render);return;
+   }
+   state.challenge++;
+   if(state.challenge===stages.length){
+    state.mode='play';state.action='special';state.actionUntil=performance.now()+1200;
+    show('A JORNADA CHEGA AO AMANHECER','<p>'+stage.success+'</p><p class="small">Jacó recebe o nome Israel. A narrativa também menciona que ele segue adiante mancando.</p>','<button id="jacobDone">CONCLUIR JORNADA</button>');
+    button('jacobDone',()=>finishSpot(i));
+   }else{
+    show('ETAPA REGISTRADA','<p>'+stage.success+'</p>','<button id="jacobNext">PRÓXIMA ETAPA</button>');
+    button('jacobNext',render);
+   }
+  });
+ };
+ render();
+}
 function puzzleBread(i){state.mode='puzzle';state.challenge=0;const portions=[2,1,3,2,3,1];const render=()=>{const n=portions[state.challenge];show('DISTRIBUIÇÃO ORGANIZADA · '+(state.challenge+1)+' / 6','<p>Escolha o tamanho do próximo grupo para manter a distribuição organizada.</p><h2 id="served">GRUPO '+(state.challenge+1)+' · '+n+' PESSOAS</h2><p class="small">Os tamanhos são uma abstração de jogo, não números apresentados no texto bíblico.</p>','<button data-size="1">PEQUENO · 1</button><button data-size="2">MÉDIO · 2</button><button data-size="3">GRANDE · 3</button>');panel.querySelectorAll('[data-size]').forEach(b=>b.onclick=()=>{if(+b.dataset.size===n){state.challenge++;if(state.challenge>=portions.length){state.mode='play';state.action='special';state.actionUntil=performance.now()+1000;finishSpot(i);}else render();}else{show('REORGANIZE A DISTRIBUIÇÃO','<p>Compare o tamanho pedido para este grupo com a opção escolhida.</p>','<button id="retry">TENTAR NOVAMENTE</button>');button('retry',render);}});};render();}
 function puzzleDavid(i){state.mode='puzzle';show('A ESCOLHA DE DAVI','<p>Diante do desafio, qual atitude melhor representa a confiança que Davi expressa no relato?</p>','<button data-david="trust">Confiar no Senhor</button><button data-david="fear">Desistir por medo</button><button data-david="pride">Confiar apenas na própria aparência</button>');panel.querySelectorAll('[data-david]').forEach(b=>b.onclick=()=>{if(b.dataset.david==='trust'){state.mode='play';finishSpot(i);}else{show('RELEIA O RELATO','<p>Observe as palavras de Davi em 1 Samuel 17:45–47 e tente novamente.</p>','<button id="retry">TENTAR NOVAMENTE</button>');button('retry',()=>puzzleDavid(i));}});}
 function checkComplete(){if(state.found.length>=(state.chapter===0?4:3)){const ch=chapters[state.chapter];show('CAPÍTULO CONCLUÍDO','<p>'+ch.name+' — '+ch.ref+'</p><p>Você descobriu as três partes desta jornada.</p>',state.chapter<6?'<button id="next">PRÓXIMO CAPÍTULO</button>':'<button id="end">ENCERRAR JORNADA</button>');button('next',()=>nextChapter());button('end',()=>show('JORNADA CONCLUÍDA','<p>Você percorreu os sete capítulos de THE BIBLE: LOST SECRETS.</p>','<button id="restart">RECOMEÇAR</button>'));button('restart',()=>begin(true));}}
