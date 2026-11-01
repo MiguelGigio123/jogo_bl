@@ -118,6 +118,11 @@ test('Éden: três pistas liberam a clareira oriental e o enigma final', async (
   await page.evaluate(() => window.__TLS_TEST__.setChapter(0));
   for (const spot of [0, 1, 2]) {
     await page.evaluate(i => window.__TLS_TEST__.interactSpot(i), spot);
+    if (spot === 1) {
+      for (const n of ['PISOM','GIOM','TIGRE','EUPRATES'])
+        await page.locator('[data-river]').filter({hasText:n}).click();
+      await page.getByRole('button', { name: 'CONFIRMAR' }).click();
+    }
     await expect(page.getByRole('button', { name: 'CONTINUAR' })).toBeVisible();
     await page.getByRole('button', { name: 'CONTINUAR' }).click();
   }
