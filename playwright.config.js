@@ -14,7 +14,7 @@ module.exports = defineConfig({
   },
   projects: [
     { name: 'chromium-desktop', use: { ...devices['Desktop Chrome'] } },
-    { name: 'chromium-mobile', use: { ...devices['iPhone 13'] } }
+    { name: 'chromium-mobile', use: { ...devices['iPhone 13'], browserName: 'chromium' } }
   ],
   webServer: process.env.GAME_URL ? undefined : {
     command: 'npx http-server . -p 4173 -c-1',
