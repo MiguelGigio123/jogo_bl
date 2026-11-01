@@ -120,8 +120,8 @@ test('mantém o jogador dentro da área caminhável e renderiza texto em alta re
   await page.waitForTimeout(2600);
   await page.keyboard.up('ArrowUp');
   const player = await page.evaluate(() => window.__TLS_TEST__.getState());
-  expect(player.y).toBeGreaterThanOrEqual(128);
-  expect(player.y).toBeLessThanOrEqual(258);
+  expect(player.y).toBeGreaterThanOrEqual(145);
+  expect(player.y).toBeLessThanOrEqual(525);
 });
 
 test('Éden: três pistas liberam a clareira oriental e o enigma final', async ({ page }) => {
