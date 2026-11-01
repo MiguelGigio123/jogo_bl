@@ -53,7 +53,8 @@ async function solve(page, chapter, spot) {
   } else if (chapter === 2) {
     for (const [step, answer] of [1, 0, 2].entries()) { await page.locator('[data-lane="' + answer + '"]').click(); if (step < 2) await page.locator('#mosesNext').click(); }
   } else if (chapter === 3) {
-    await page.locator('[data-answer="0"]').click();
+    for (const [step, answer] of [1, 1, 1].entries()) { await page.locator('[data-jesus="'+answer+'"]').click(); if (step < 2) await page.locator('#jesusNext').click(); }
+    await page.locator('#jesusDone').click();
   } else if (chapter === 4) {
     for (const answer of [1, 1, 0, 0]) await page.locator('[data-j="' + answer + '"]').click();
   } else if (chapter === 5) {
@@ -88,7 +89,12 @@ test('os sete capítulos permitem concluir seus pontos de exploração e enigmas
     } else if (chapter === 3) {
       for (let spot = 0; spot < 3; spot++) {
         await interact(page, spot);
-        await page.locator('[data-answer="0"]').click();
+        for (let step = 0; step < 3; step++) {
+          const answer = [0, 1, 0][spot];
+          await page.locator('[data-jesus="'+answer+'"]').click();
+          if (step < 2) await page.locator('#jesusNext').click();
+        }
+        await page.locator('#jesusDone').click();
         await closeSpot(page);
       }
     } else {
@@ -393,5 +399,54 @@ test('Travessia do Mar: botões e texto das etapas permanecem utilizáveis em te
     expect(box).not.toBeNull();
     expect(box.width).toBeGreaterThan(0);
     expect(box.height).toBeGreaterThan(0);
+  }
+});
+
+test('Jesus: as três histórias têm etapas próprias, progresso e conclusão independente', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(3));
+  const expected = [
+    {spot:0,answers:[0,1,1],title:'O BOM SAMARITANO'},
+    {spot:1,answers:[0,1,0],title:'A TEMPESTADE ACALMADA'},
+    {spot:2,answers:[1,0,0],title:'O FILHO PRÓDIGO'}
+  ];
+  for (const story of expected) {
+    await interact(page, story.spot);
+    await expect(page.locator('.panel h2')).toContainText(story.title);
+    const progress=page.locator('.jesus-progress');
+    await expect(progress).toHaveAttribute('aria-valuenow','0');
+    await page.locator('[data-jesus="2"]').click();
+    await expect(page.getByRole('heading',{name:'RELEMBRE A HISTÓRIA'})).toBeVisible();
+    await page.locator('#jesusRetry').click();
+    for(let step=0;step<3;step++){
+      await page.locator('[data-jesus="'+story.answers[step]+'"]').click();
+      if(step<2){
+        await page.locator('#jesusNext').click();
+        await expect(progress).toHaveAttribute('aria-valuenow',String(step+1));
+      }
+    }
+    await expect(page.getByRole('heading',{name:'HISTÓRIA DESCOBERTA'})).toBeVisible();
+    await page.locator('#jesusDone').click();
+    await expect(page.getByRole('heading',{name:story.spot===0?'O Bom Samaritano':story.spot===1?'A tempestade acalmada':'O filho pródigo'})).toBeVisible();
+    await closeSpot(page);
+  }
+  const state=await page.evaluate(()=>window.__TLS_TEST__.getState());
+  expect(state.found).toEqual([0,1,2]);
+  expect(errors).toEqual([]);
+});
+
+test('Jesus: interface das histórias cabe em tela mobile e mantém controles acessíveis', async ({ page }) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/?test=1');
+  await page.evaluate(()=>window.__TLS_TEST__.setChapter(3));
+  await interact(page,1);
+  await expect(page.locator('.jesus-progress')).toBeVisible();
+  for(const b of await page.locator('[data-jesus]').all()){
+    const box=await b.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box.width).toBeGreaterThan(0);
+    expect(box.height).toBeGreaterThanOrEqual(32);
   }
 });
