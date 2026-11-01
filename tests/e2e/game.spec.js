@@ -582,3 +582,81 @@ test('Controles mobile: soltar o botão virtual interrompe o movimento', async (
     test.skip(true, 'A interface atual não expõe botão virtual com data-key=ArrowRight.');
   }
 });
+
+
+test('Jacó: quatro etapas seguem a narrativa e exibem progresso correto', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(4));
+  await interact(page, 1);
+  const progress = page.locator('.jacob-progress');
+  const stages = [
+    {answer:1,title:'A NOITE NO ACAMPAMENTO'},
+    {answer:0,title:'O ENCONTRO JUNTO AO RIO'},
+    {answer:0,title:'O PEDIDO DE UMA BÊNÇÃO'},
+    {answer:1,title:'UM NOVO NOME'}
+  ];
+  for (let i=0;i<stages.length;i++) {
+    await expect(page.locator('h3')).toHaveText(stages[i].title);
+    await expect(progress).toHaveAttribute('aria-valuenow',String(i));
+    await page.locator('[data-j="'+stages[i].answer+'"]').click();
+    if(i<3) {
+      await page.locator('#jacobNext').click();
+      await expect(progress).toHaveAttribute('aria-valuenow',String(i+1));
+    }
+  }
+  await expect(page.getByRole('heading',{name:'A JORNADA CHEGA AO AMANHECER'})).toBeVisible();
+  await page.locator('#jacobDone').click();
+  await expect(page.getByRole('button',{name:'CONTINUAR'})).toBeVisible();
+  const state=await page.evaluate(()=>window.__TLS_TEST__.getState());
+  expect(state.found).toContain(1);
+  expect(errors).toEqual([]);
+});
+
+test('Jacó: respostas erradas não avançam a etapa e permitem nova tentativa', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(4));
+  await interact(page,1);
+  await page.locator('[data-j="0"]').click();
+  await expect(page.getByRole('heading',{name:'RELEIA O RELATO'})).toBeVisible();
+  await page.locator('#jacobRetry').click();
+  await expect(page.locator('h3')).toHaveText('A NOITE NO ACAMPAMENTO');
+  await expect(page.locator('.jacob-progress')).toHaveAttribute('aria-valuenow','0');
+  await page.locator('[data-j="1"]').click();
+  await page.locator('#jacobNext').click();
+  await expect(page.locator('h3')).toHaveText('O ENCONTRO JUNTO AO RIO');
+});
+
+test('Jacó: não registra descoberta antes da quarta etapa', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(4));
+  await interact(page,1);
+  for (const [step,answer] of [1,0,0].entries()) {
+    await page.locator('[data-j="'+answer+'"]').click();
+    await page.locator('#jacobNext').click();
+    const state=await page.evaluate(()=>window.__TLS_TEST__.getState());
+    expect(state.found).not.toContain(1);
+    expect(state.mode).toBe('puzzle');
+  }
+  await page.locator('[data-j="1"]').click();
+  await page.locator('#jacobDone').click();
+  const state=await page.evaluate(()=>window.__TLS_TEST__.getState());
+  expect(state.found).toContain(1);
+});
+
+test('Jacó: painel e quatro opções continuam utilizáveis em celular', async ({ page }) => {
+  await page.setViewportSize({width:320,height:700});
+  await page.goto('/?test=1');
+  await page.evaluate(()=>window.__TLS_TEST__.setChapter(4));
+  await interact(page,1);
+  await expect(page.locator('.jacob-progress')).toBeVisible();
+  await expect(page.locator('[data-j]')).toHaveCount(3);
+  const dims=await page.evaluate(()=>({
+    viewport:document.documentElement.clientWidth,
+    page:document.documentElement.scrollWidth,
+    panel:document.querySelector('.panel').getBoundingClientRect().width
+  }));
+  expect(dims.page).toBeLessThanOrEqual(dims.viewport);
+  expect(dims.panel).toBeGreaterThan(0);
+});
