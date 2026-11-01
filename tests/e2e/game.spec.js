@@ -450,3 +450,71 @@ test('Jesus: interface das histórias cabe em tela mobile e mantém controles ac
     expect(box.height).toBeGreaterThanOrEqual(32);
   }
 });
+
+
+test('Jesus: cada etapa das três histórias bloqueia todas as alternativas erradas', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(()=>window.__TLS_TEST__.setChapter(3));
+  const stories=[
+    {spot:0,correct:[0,1,1]},
+    {spot:1,correct:[0,1,0]},
+    {spot:2,correct:[1,0,0]}
+  ];
+  for(const story of stories){
+    await interact(page,story.spot);
+    for(let step=0;step<3;step++){
+      const wrong=story.correct[step]===0?1:0;
+      await page.locator('[data-jesus="'+wrong+'"]').click();
+      await expect(page.getByRole('heading',{name:'RELEMBRE A HISTÓRIA'})).toBeVisible();
+      await expect(page.locator('#jesusRetry')).toBeVisible();
+      await page.locator('#jesusRetry').click();
+      await expect(page.locator('.jesus-progress')).toHaveAttribute('aria-valuenow',String(step));
+      await page.locator('[data-jesus="'+story.correct[step]+'"]').click();
+      if(step<2) await page.locator('#jesusNext').click();
+    }
+    await expect(page.getByRole('heading',{name:'HISTÓRIA DESCOBERTA'})).toBeVisible();
+    await page.locator('#jesusDone').click();
+    await closeSpot(page);
+  }
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('tls_save_v3')));
+  expect(saved.chapter).toBe(3);
+  expect(saved.found).toEqual([0,1,2]);
+});
+
+test('Jesus: interações repetidas não duplicam progresso nem reiniciam história concluída', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(()=>window.__TLS_TEST__.setChapter(3));
+  await interact(page,0);
+  for(const [step,answer] of [0,1,1].entries()){
+    await page.locator('[data-jesus="'+answer+'"]').click();
+    if(step<2) await page.locator('#jesusNext').click();
+  }
+  await page.locator('#jesusDone').click();
+  await closeSpot(page);
+  let state=await page.evaluate(()=>window.__TLS_TEST__.getState());
+  expect(state.found).toEqual([0]);
+  await page.evaluate(()=>window.__TLS_TEST__.interactSpot(0));
+  await expect(page.locator('#overlay')).toHaveClass(/hidden/);
+  state=await page.evaluate(()=>window.__TLS_TEST__.getState());
+  expect(state.found).toEqual([0]);
+  expect(state.mode).toBe('play');
+});
+
+test('Jesus: jogador alcança fisicamente o primeiro ponto da vila e interage pelo teclado', async ({ page }) => {
+  const errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/?test=1');
+  await page.evaluate(()=>window.__TLS_TEST__.setChapter(3));
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(500);
+  await page.keyboard.up('ArrowRight');
+  await page.keyboard.down('ArrowUp');
+  await page.waitForTimeout(1150);
+  await page.keyboard.up('ArrowUp');
+  const player=await page.evaluate(()=>window.__TLS_TEST__.getState());
+  expect(Math.abs(player.x-90)).toBeLessThan(20);
+  expect(Math.abs(player.y-150)).toBeLessThan(22);
+  await page.keyboard.press('e');
+  await expect(page.locator('.panel h2')).toContainText('O BOM SAMARITANO');
+  expect(errors).toEqual([]);
+});
