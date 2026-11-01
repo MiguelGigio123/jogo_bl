@@ -91,3 +91,22 @@ test('os sete capítulos permitem concluir seus pontos de exploração e enigmas
   }
   expect(errors).toEqual([]);
 });
+
+test('mantém o jogador dentro da área caminhável e renderiza texto em alta resolução', async ({ page }) => {
+  await page.goto('/?test=1');
+  const metrics = await page.evaluate(() => {
+    const canvas = document.querySelector('#game');
+    const style = getComputedStyle(canvas);
+    return { width: canvas.width, height: canvas.height, imageRendering: style.imageRendering };
+  });
+  expect(metrics.width).toBe(1024);
+  expect(metrics.height).toBe(576);
+  expect(metrics.imageRendering).not.toBe('pixelated');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(0));
+  await page.keyboard.down('ArrowUp');
+  await page.waitForTimeout(2600);
+  await page.keyboard.up('ArrowUp');
+  const player = await page.evaluate(() => window.__TLS_TEST__.getState());
+  expect(player.y).toBeGreaterThanOrEqual(128);
+  expect(player.y).toBeLessThanOrEqual(258);
+});
