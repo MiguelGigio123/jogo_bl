@@ -518,3 +518,67 @@ test('Jesus: jogador alcança fisicamente o primeiro ponto da vila e interage pe
   await expect(page.locator('.panel h2')).toContainText('O BOM SAMARITANO');
   expect(errors).toEqual([]);
 });
+
+
+test('Todos os capítulos: interface não cria rolagem horizontal em celulares', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto('/?test=1');
+  for (let chapter = 0; chapter < 7; chapter++) {
+    await page.evaluate(i => window.__TLS_TEST__.setChapter(i), chapter);
+    const dimensions = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      page: document.documentElement.scrollWidth,
+      canvas: document.querySelector('#game').getBoundingClientRect().width
+    }));
+    expect(dimensions.page, 'rolagem horizontal no capítulo ' + chapter).toBeLessThanOrEqual(dimensions.viewport);
+    expect(dimensions.canvas).toBeGreaterThan(0);
+  }
+});
+
+test('Jesus: progresso permanece salvo após recarregar a página', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(3));
+  await interact(page, 1);
+  for (const [step, answer] of [0, 1, 0].entries()) {
+    await page.locator('[data-jesus="' + answer + '"]').click();
+    if (step < 2) await page.locator('#jesusNext').click();
+  }
+  await page.locator('#jesusDone').click();
+  await closeSpot(page);
+  await page.reload();
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('tls_save_v3')));
+  expect(saved.chapter).toBe(3);
+  expect(saved.found).toContain(1);
+  await expect(page.getByRole('button', { name: 'CONTINUAR' })).toBeVisible();
+  await page.getByRole('button', { name: 'CONTINUAR' }).click();
+  await expect(page.locator('#chapter')).toContainText('04');
+});
+
+test('Todos os capítulos: nenhuma exceção JavaScript ao alternar rapidamente entre cenários', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?test=1');
+  for (const chapter of [0, 6, 2, 5, 1, 4, 3, 0, 3, 6]) {
+    await page.evaluate(i => window.__TLS_TEST__.setChapter(i), chapter);
+    await page.waitForTimeout(80);
+  }
+  expect(errors).toEqual([]);
+});
+
+test('Controles mobile: soltar o botão virtual interrompe o movimento', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?test=1');
+  await page.evaluate(() => window.__TLS_TEST__.setChapter(3));
+  const right = page.locator('[data-key="ArrowRight"]');
+  if (await right.count()) {
+    await right.dispatchEvent('pointerdown');
+    await page.waitForTimeout(250);
+    await right.dispatchEvent('pointerup');
+    const stopped = await page.evaluate(() => window.__TLS_TEST__.getState());
+    await page.waitForTimeout(250);
+    const later = await page.evaluate(() => window.__TLS_TEST__.getState());
+    expect(Math.abs(later.x - stopped.x)).toBeLessThan(2);
+  } else {
+    test.skip(true, 'A interface atual não expõe botão virtual com data-key=ArrowRight.');
+  }
+});
