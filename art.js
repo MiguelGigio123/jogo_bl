@@ -1,59 +1,81 @@
 (()=>{
 'use strict';
 const px=(c,x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));};
+const rect=(c,x,y,w,h,col)=>px(c,x,y,w,h,col);
 const palettes={
- eden:['#263d2c','#476b3e','#72934c','#b5b66b','#d9b77a'],
- noah:['#342b28','#60473a','#9b7250','#c69a68','#e0bd85'],
- moses:['#263b50','#426a80','#83a9b0','#d5c28f','#e8d6ad'],
- jesus:['#485d61','#8b9b87','#c5b78e','#d7b98e','#eee0c2'],
- jacob:['#292f45','#535a72','#8a7c73','#c49b76','#e3c8a2'],
- bread:['#5a4632','#8a6945','#b28a58','#d6b879','#f0dfb4'],
- david:['#354b3e','#607b56','#9d9b6b','#c7a779','#e6d4ae']
+eden:{ground:'#527b49',dark:'#294b37',light:'#88a75b',path:'#b7a17a',water:'#579eaa'},
+noah:{ground:'#70503a',dark:'#382b25',light:'#b28a5b',path:'#9a7550',water:'#4d7882'},
+moses:{ground:'#c3ad7f',dark:'#806f52',light:'#ead9ad',path:'#e4d4a9',water:'#326b88'},
+jesus:{ground:'#8b986c',dark:'#4d6748',light:'#b8ad7c',path:'#c3a778',water:'#779e9a'},
+jacob:{ground:'#4d5260',dark:'#252d40',light:'#9b927e',path:'#877d6c',water:'#456d7b'},
+bread:{ground:'#a78c5e',dark:'#66513a',light:'#d4b87d',path:'#c4a477',water:'#71938c'},
+david:{ground:'#9a8a68',dark:'#514b40',light:'#c2ad83',path:'#b8a27b',water:'#668a8c'}
 };
+function tree(c,x,y,s=1){px(c,x-10*s,y-18*s,20*s,22*s,'#674a31');px(c,x-23*s,y-42*s,46*s,30*s,'#315b3d');px(c,x-17*s,y-53*s,34*s,18*s,'#477744');px(c,x-10*s,y-61*s,20*s,12*s,'#70904b');px(c,x-16*s,y-39*s,6*s,7*s,'#8da85a');}
+function bush(c,x,y,col='#365d3b'){px(c,x-12,y-6,24,12,col);px(c,x-8,y-12,16,7,'#64894b');}
+function rock(c,x,y,w=24,h=14){px(c,x-w/2,y-h,w,h,'#77776b');px(c,x-w/2+4,y-h-3,w-8,4,'#a49c84');}
+function building(c,x,y,w,h,wall='#b99a70'){px(c,x,y,w,h,wall);px(c,x-4,y-5,w+8,8,'#69513e');px(c,x+w*.38,y+h*.52,w*.24,h*.48,'#5a4636');px(c,x+5,y+8,7,8,'#6f8a8b');}
 function scene(c,id,t){
  const p=palettes[id]||palettes.eden;
- const sky=id==='moses'?'#243c56':id==='jacob'?'#20263c':id==='david'?'#b5a17b':id==='bread'?'#c6a875':'#9eb5a0';
- px(c,0,0,512,288,sky);
+ px(c,0,0,512,288,p.ground);
+ // Distant skyline and distinct chapter geography
  if(id==='eden'){
-  px(c,0,0,512,104,'#9ab99b');px(c,0,78,512,210,'#54794c');
-  for(let i=0;i<9;i++){let x=i*67-12;px(c,x,45+(i%3)*8,34,58,'#31583d');px(c,x+7,31+(i%3)*8,22,38,'#4f7c49');px(c,x+13,20+(i%3)*8,10,18,'#8aa45b');}
-  px(c,0,205,512,48,'#547b72');px(c,0,216,512,15,'#81a9a0');for(let i=0;i<30;i++)px(c,(i*37)%512,220+(i%4)*5,12,2,'#b6d0b3');
-  px(c,232,72,48,78,'#66472e');px(c,214,55,84,44,'#426d3c');px(c,220,40,70,38,'#6e8d45');
+  px(c,0,0,512,100,'#9cb99c');px(c,0,85,512,25,'#769b72');
+  for(let i=0;i<8;i++)tree(c,28+i*68,120+(i%3)*5,.8+(i%2)*.15);
+  px(c,0,190,512,46,p.water);for(let i=0;i<15;i++){px(c,i*37,198+(i%3)*8,22,2,'#a4d1c3');px(c,i*37+9,218+(i%2)*7,12,2,'#d1e4bd');}
+  px(c,0,236,512,52,'#456b43');px(c,0,242,512,3,'#729451');
+  tree(c,250,143,1.55);tree(c,410,155,1.2);for(let i=0;i<20;i++)bush(c,(i*47)%512,160+(i%3)*22);
+  for(let i=0;i<12;i++){let x=(i*41)%500,y=180+(i%4)*19;px(c,x,y,3,3,'#e6d38a');}
  }else if(id==='noah'){
-  px(c,0,0,512,288,'#56483a');px(c,0,20,512,244,'#76583e');
-  for(let y=32;y<260;y+=28){px(c,0,y,512,3,'#b08a5c');for(let x=12;x<512;x+=64)px(c,x,y+4,4,22,'#4c392e');}
-  px(c,20,25,472,10,'#3b3029');px(c,25,250,462,12,'#3b3029');
-  for(let i=0;i<7;i++){px(c,40+i*67,78+(i%2)*45,30,22,'#a77c50');px(c,44+i*67,73+(i%2)*45,22,7,'#d3ae76');}
+  px(c,0,0,512,288,'#4a382e');px(c,0,24,512,220,'#72543c');
+  for(let y=30;y<250;y+=32){px(c,0,y,512,4,'#b08a5c');for(let x=8;x<512;x+=48)px(c,x,y+4,3,26,'#49372c');}
+  px(c,0,0,512,28,'#302822');px(c,0,250,512,38,'#382a23');
+  // pens, feed troughs and stacked supplies
+  for(let i=0;i<5;i++){let x=22+i*98;px(c,x,70,3,145,'#4a3427');px(c,x+48,70,3,145,'#4a3427');px(c,x,70,51,3,'#c09762');px(c,x,212,51,3,'#c09762');}
+  for(let i=0;i<6;i++){let x=32+i*82;px(c,x,100+(i%2)*52,26,14,'#9d7549');px(c,x+3,96+(i%2)*52,20,5,'#d2ae78');}
+  px(c,0,232,512,12,'#3b2c25');
  }else if(id==='moses'){
-  px(c,0,0,512,288,'#28445b');px(c,0,0,512,50,'#25374c');
-  px(c,0,60,170,228,'#315e78');px(c,342,60,170,228,'#315e78');
-  for(let i=0;i<18;i++){let y=60+i*12;px(c,0,y,166,2,'#7197a0');px(c,346,y,166,2,'#7197a0');}
-  px(c,168,55,176,225,'#c4b58d');px(c,180,55,152,225,'#e0d0a6');
-  for(let i=0;i<18;i++)px(c,190+(i*41)%130,70+(i*29)%190,8,3,'#f2e3bd');
+  px(c,0,0,512,288,'#223d57');px(c,0,0,512,70,'#314c61');
+  // towering parted waters, banks and walkable dry path
+  px(c,0,55,144,233,'#285c7a');px(c,368,55,144,233,'#285c7a');
+  for(let y=60;y<280;y+=13){for(let x=0;x<142;x+=22)px(c,x+(y%3)*3,y,18,3,'#79b1bd');for(let x=370;x<512;x+=22)px(c,x,y,18,3,'#79b1bd');}
+  px(c,144,58,12,225,'#a5c7c5');px(c,356,58,12,225,'#a5c7c5');
+  px(c,156,70,200,218,'#c8b58a');px(c,166,72,180,216,'#e1d1a7');
+  for(let i=0;i<24;i++)rock(c,170+(i*53)%175,90+(i*31)%180,12,9);
+  for(let i=0;i<15;i++){px(c,5+i*33,60+(i%4)*42,20,2,'#b4d8d7');}
  }else if(id==='jesus'){
-  px(c,0,0,512,288,'#a4ad87');px(c,0,154,512,134,'#8b986e');
-  for(let i=0;i<8;i++){let x=i*70;px(c,x+12,76,48,70,'#a88761');px(c,x+7,68,58,12,'#705a46');px(c,x+18,90,36,56,'#d0b78b');}
-  px(c,0,205,512,34,'#687d55');px(c,0,239,512,49,'#4c694a');
+  px(c,0,0,512,288,'#9da77e');px(c,0,0,512,96,'#b8b88e');
+  for(let i=0;i<6;i++)building(c,15+i*88,65+(i%2)*7,58,67,'#b99b72');
+  px(c,0,157,512,22,'#6e8c68');px(c,0,179,512,109,'#8a9569');
+  // village square and olive trees
+  px(c,0,206,512,40,'#b99c70');for(let i=0;i<7;i++)tree(c,40+i*76,175,.55);
+  for(let i=0;i<5;i++)bush(c,20+i*118,252,'#4b6a45');
  }else if(id==='jacob'){
-  px(c,0,0,512,288,'#252d43');px(c,0,184,512,104,'#3e4656');
-  for(let i=0;i<90;i++){let x=(i*67)%512,y=(i*37)%150;px(c,x,y,2,2,'#e9d9a9');}
-  px(c,0,204,512,22,'#435d68');px(c,0,210,512,5,'#78919a');px(c,0,226,512,3,'#667d89');
-  px(c,340,70,24,130,'#272d39');px(c,330,62,44,22,'#363b48');
+  px(c,0,0,512,288,'#20283d');for(let i=0;i<100;i++){let x=(i*67)%512,y=(i*37)%170;px(c,x,y,2,2,'#e9dfb9');}
+  px(c,0,172,512,116,'#4d5360');px(c,0,188,512,35,'#456b78');px(c,0,195,512,4,'#91b3b1');
+  for(let i=0;i<8;i++)rock(c,i*73,234+(i%2)*18,30,18);
+  for(let i=0;i<4;i++){px(c,45+i*125,100,20,60,'#2e3540');px(c,36+i*125,92,38,14,'#41464d');}
+  px(c,0,260,512,28,'#353c4b');
  }else if(id==='bread'){
-  px(c,0,0,512,288,'#b99c68');px(c,0,176,512,112,'#8e754f');
-  for(let i=0;i<18;i++){let x=(i*83)%512,y=70+(i*43)%130;px(c,x,y,28,22,'#9b7953');px(c,x+4,y-5,20,8,'#c8a779');}
-  px(c,0,215,512,5,'#6e6449');for(let i=0;i<8;i++){px(c,35+i*62,190,24,20,'#9c7142');px(c,39+i*62,184,16,8,'#e2c28a');}
+  px(c,0,0,512,288,'#b9a06d');px(c,0,0,512,90,'#c9b27e');
+  for(let i=0;i<7;i++){let x=25+i*72;px(c,x,90+(i%2)*15,35,20,'#7c684c');px(c,x+4,85+(i%2)*15,27,7,'#d5bd8a');}
+  px(c,0,180,512,108,'#8f7954');px(c,0,180,512,8,'#c0a575');
+  for(let i=0;i<9;i++){let x=15+i*58;px(c,x,208+(i%3)*13,24,16,'#9d7446');px(c,x+3,203+(i%3)*13,18,6,'#e0c28d');}
+  for(let i=0;i<12;i++){let x=(i*43)%500;px(c,x,160+(i%3)*13,8,12,'#6b6250');px(c,x+1,153+(i%3)*13,6,8,'#c18c68');}
  }else{
-  px(c,0,0,512,288,'#b4a17a');px(c,0,172,512,116,'#8d805f');
-  for(let i=0;i<7;i++){let x=i*82;px(c,x+5,68,58,104,'#776b59');px(c,x,62,68,12,'#554f48');px(c,x+14,90,40,8,'#c2ad83');}
-  px(c,0,220,512,18,'#70664f');px(c,0,238,512,50,'#81704f');
+  px(c,0,0,512,288,'#b4a27c');px(c,0,0,512,80,'#c2b18b');
+  // distant hills, tents and two camps
+  for(let i=0;i<5;i++){px(c,i*112,65+(i%2)*9,92,54,'#7d8269');px(c,i*112+8,74+(i%2)*9,76,45,'#a39b76');}
+  for(let i=0;i<6;i++){let x=15+i*84;px(c,x,122,52,40,'#8c6749');px(c,x-5,118,62,8,'#594638');px(c,x+22,128,8,34,'#574638');}
+  px(c,0,180,512,108,'#928260');px(c,0,180,512,9,'#c2a779');
+  for(let i=0;i<9;i++)rock(c,i*61+20,232+(i%3)*9,24,13);
  }
- // atmospheric foreground, shadows and drifting motes
- c.globalAlpha=.16;for(let i=0;i<18;i++){let x=(i*71+t*(id==='moses'?5:2))%512,y=(i*43+Math.sin(t+i)*3)%288;px(c,x,y,2,2,'#fff1c5');}c.globalAlpha=1;
+ // edge frame, subtle animated ambient motes
+ c.globalAlpha=.16;for(let i=0;i<22;i++){let x=(i*71+t*(id==='moses'?8:1.5))%512,y=(i*43+Math.sin(t+i)*3)%288;px(c,x,y,2,2,'#fff1c5');}c.globalAlpha=1;
 }
 function character(c,name,x,y,dir,frame,action,t){
  const base={
- explorer:{skin:'#b77d55',hair:'#34271f',robe:'#526e75',trim:'#d4b77b',cape:'#31464d'},
+ explorer:{skin:'#b77d55',hair:'#34271f',robe:'#526e75',trim:'#d4b77b'},
  eve:{skin:'#c58c65',hair:'#493025',robe:'#78965a',trim:'#d8c28c'},
  adam:{skin:'#b77c53',hair:'#513528',robe:'#96724b',trim:'#d9bd83'},
  noah:{skin:'#bd8a63',hair:'#ddd0ae',robe:'#78604a',trim:'#e1c18b',beard:'#ddd0ae'},
@@ -63,10 +85,9 @@ function character(c,name,x,y,dir,frame,action,t){
  david:{skin:'#b97e58',hair:'#583727',robe:'#66805a',trim:'#e2c48c'},
  goliath:{skin:'#9b694e',hair:'#382c29',robe:'#766c60',trim:'#b9a27c',large:true}
  }[name]||{skin:'#b77d55',hair:'#34271f',robe:'#526e75',trim:'#d4b77b'};
- const s=base.large?1.28:1, bob=action==='talk'?Math.sin(t*10)*1.5:action==='interact'?Math.sin(t*13)*2:frame%2?1:0;
+ const s=base.large?1.35:1, bob=action==='talk'?Math.sin(t*10)*1.2:action==='interact'?Math.sin(t*13)*1.5:action==='special'?Math.sin(t*8)*1.4:frame%2?0.7:0;
  c.save();c.translate(Math.round(x),Math.round(y+bob));c.scale(s,1);
- // cast shadow, feet and tunic, direction changes body profile
- c.fillStyle='#17221dcc';c.beginPath();c.ellipse(0,-2,11,4,0,0,Math.PI*2);c.fill();
+ c.fillStyle='#17221d99';c.beginPath();c.ellipse(0,-2,11,4,0,0,Math.PI*2);c.fill();
  const step=action==='walk'?Math.sin(t*15)*3:action==='special'?Math.sin(t*8)*2:0;
  px(c,-7,-8+step,5,7,'#44362e');px(c,2,-8-step,5,7,'#44362e');
  px(c,-8,-22,16,16,base.robe);px(c,-9,-21,18,4,base.trim);px(c,-7,-13,14,2,'#453d34');
@@ -74,15 +95,11 @@ function character(c,name,x,y,dir,frame,action,t){
  else{px(c,-10,-20,4,10,base.skin);px(c,6,-20,4,10,base.skin);}
  px(c,-6,-34,12,12,base.skin);px(c,-7,-36,14,5,base.hair);px(c,-7,-32,3,7,base.hair);px(c,4,-32,3,7,base.hair);
  if(base.beard)px(c,-5,-25,10,5,base.beard);
- if(name==='eve'||name==='mary')px(c,-8,-37,16,5,'#6c4935');
  if(base.staff){px(c,11,-37,2,34,'#805c39');px(c,10,-39,4,3,'#c9a56e');}
- if(name==='david')px(c,-9,-23,18,3,'#d5bb75');
  if(action==='talk'){px(c,dir===1?-9:6,-28,3,2,'#f4e6ca');}
  if(action==='interact'){px(c,dir===1?-13:9,-20,5,4,base.skin);}
  if(action==='special'){px(c,-12,-42,24,2,'#f0d28b');px(c,-15,-39,2,8,'#f0d28b');px(c,13,-39,2,8,'#f0d28b');}
- // face direction, eye pixels
- if(dir===0||dir===3){px(c,-3,-30,2,2,'#30251f');px(c,3,-30,2,2,'#30251f');}
- else px(c,dir===1?-5:3,-30,2,2,'#30251f');
+ if(dir===0||dir===3){px(c,-3,-30,2,2,'#30251f');px(c,3,-30,2,2,'#30251f');}else px(c,dir===1?-5:3,-30,2,2,'#30251f');
  c.restore();
 }
 window.TLSArt={scene,character};
