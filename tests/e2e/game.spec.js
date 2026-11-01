@@ -49,7 +49,7 @@ async function solve(page, chapter, spot) {
   if (chapter === 0) {
     await page.locator('[data-eden="knowledge"]').click();
   } else if (chapter === 1) {
-    for (const answer of [0, 1, 0]) await page.locator('[data-choice="' + answer + '"]').click();
+    for (const [step, answer] of [0, 1, 0].entries()) { await page.locator('[data-choice="' + answer + '"]').click(); if (step < 2) await page.locator('#arkNext').click(); }
   } else if (chapter === 2) {
     for (const lane of ['NORTE', 'CENTRO', 'SUL', 'CENTRO', 'NORTE'])
       await page.locator('[data-lane="' + lane + '"]').click();
