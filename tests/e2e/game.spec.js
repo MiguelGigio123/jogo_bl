@@ -155,11 +155,11 @@ test('Éden: jogador consegue caminhar fisicamente até a clareira dos animais e
   await page.goto('/?test=1');
   await page.evaluate(() => window.__TLS_TEST__.setChapter(0));
   await page.keyboard.down('ArrowUp');
-  await page.waitForTimeout(3400);
+  await page.waitForTimeout(3000);
   await page.keyboard.up('ArrowUp');
-  await page.keyboard.down('ArrowRight');
-  await page.waitForTimeout(1300);
-  await page.keyboard.up('ArrowRight');
+  await page.keyboard.down('ArrowLeft');
+  await page.waitForTimeout(3000);
+  await page.keyboard.up('ArrowLeft');
   const player = await page.evaluate(() => window.__TLS_TEST__.getState());
   expect(Math.abs(player.x - 150)).toBeLessThan(20);
   expect(Math.abs(player.y - 220)).toBeLessThan(25);
